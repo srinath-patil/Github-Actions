@@ -16,6 +16,8 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+    - name: Maven install
+      run: sudo apt mvn install -y
     - name: Build with Maven
       run: mvn compile
 
