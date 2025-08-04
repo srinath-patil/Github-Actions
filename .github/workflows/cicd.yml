@@ -55,6 +55,11 @@ jobs:
         cache: maven
     - name: unit-test
       run: mvn test
+    - name: Upload_JAR_File
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-jar
+        path: target/*.jar
 
   build_sonarscan:
     runs-on: self-hosted
@@ -81,4 +86,29 @@ jobs:
         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }} #OPTIONAL
   
 
-  
+  build-docker-image:
+    runs-on: self-hosted
+    needs: build_sonarscan
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download artifact
+      uses: actions/checkout@v4
+      with:
+        name: app-jar
+        path: app #this will download JAR to ./app folder
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        tags: spatil24/app:latest
+    
